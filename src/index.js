@@ -1,6 +1,6 @@
 let multiaddr = require("multiaddr")
 const PeerInfo = require("peer-info")
-const {P2PNode} = require("./p2p")
+const {P2PNode} = require("./p2p/index")
 function createPeer(callback) {
     // create a new PeerInfo object with a newly-generated PeerId
     PeerInfo.create((err, peerInfo) => {
@@ -24,3 +24,29 @@ function createPeer(callback) {
       callback(null, peer)
     })
   }
+  function handleStart(peer) {
+    // get the list of addresses for our peer now that it's started.
+    // there should be one address of the form
+    // `/ip4/127.0.0.1/tcp/${assignedPort}/ipfs/${generatedPeerId}`,
+    // where `assignedPort` is randomly chosen by the operating system
+    // and `generatedPeerId` is generated in the `createPeer` function above.
+    const addresses = peer.peerInfo.multiaddrs.toArray()
+    console.log('peer started. listening on addresses:')
+    addresses.forEach(addr => console.log(addr.toString()))
+}
+
+
+// main entry point
+createPeer((err, peer) => {
+if (err) {
+  throw err
+}
+
+peer.start(err => {
+  if (err) {
+    throw err
+  }
+
+  handleStart(peer)
+})
+})

@@ -16,3 +16,6 @@ class P2PNode extends libp2p{
         super(defaultsDeep(opts,DEFAULT_OPTS))
     }
 }
+module.exports={
+    P2PNode
+}
