@@ -1,6 +1,8 @@
 let multiaddr = require("multiaddr")
 const PeerInfo = require("peer-info")
+const PeerId = require("peer-id")
 const {P2PNode} = require("./p2p/index")
+const process = require('process')
 function createPeer(callback) {
     // create a new PeerInfo object with a newly-generated PeerId
     PeerInfo.create((err, peerInfo) => {
@@ -33,7 +35,28 @@ function createPeer(callback) {
     const addresses = peer.peerInfo.multiaddrs.toArray()
     console.log('peer started. listening on addresses:')
     addresses.forEach(addr => console.log(addr.toString()))
+    pingRemotePeer(peer)
+
 }
+function pingRemotePeer(localPeer) {
+    if (process.argv.length < 3) {
+      return console.log('no remote peer address given, skipping ping')
+    }
+    const remoteAddr = multiaddr(process.argv[2])
+  
+    // Convert the multiaddress into a PeerInfo object
+    const peerId = PeerId.createFromB58String(remoteAddr.getPeerId())
+    const remotePeerInfo = new PeerInfo(peerId)
+    remotePeerInfo.multiaddrs.add(remoteAddr)
+  
+    console.log('pinging remote peer at ', remoteAddr.toString())
+    localPeer.ping(remotePeerInfo, (err, time) => {
+      if (err) {
+        return console.error('error pinging: ', err)
+      }
+      console.log(`pinged ${remoteAddr.toString()} in ${time}ms`)
+    })
+  }
 
 
 // main entry point
